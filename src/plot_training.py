@@ -1,4 +1,4 @@
-import matplotlib.pylot as plt
+import matplotlib.pyplot as plt
 
 def plot_history(history,fine_tune_history=None):
     acc = history.history['accuracy']
