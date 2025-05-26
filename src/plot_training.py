@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-def plot_history(history,fine_tune_history=None):
+def plot_training(history,fine_tune_history=None):
     acc = history.history['accuracy']
     val_acc = history.history['val_accuracy']
     loss = history.history['loss']
