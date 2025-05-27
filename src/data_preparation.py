@@ -1,9 +1,8 @@
-import os
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-DATA_DIR = os.path.join(BASE_DIR, 'data')
+# Ścieżka do folderu ze zdjęciami na Google Drive
+DATA_DIR = '/content/drive/MyDrive/Colab Notebooks/dogdataset/images/Images'
 IMG_SIZE = (224, 224)
 BATCH_SIZE = 8
 
@@ -38,14 +37,5 @@ val_generator = train_datagen.flow_from_directory(
     color_mode='rgb'
 )
 
-def convert_to_tf_dataset(generator):
-    return tf.data.Dataset.from_generator(
-        lambda: generator,
-        output_signature=(
-            tf.TensorSpec(shape=(None, *IMG_SIZE, 3), dtype=tf.float32),
-            tf.TensorSpec(shape=(None, generator.num_classes), dtype=tf.float32)
-        )
-    ).prefetch(buffer_size=tf.data.AUTOTUNE)
-
-train_generator = convert_to_tf_dataset(train_generator)
-val_generator = convert_to_tf_dataset(val_generator)
+# (opcjonalnie) funkcja konwersji do tf.data.Dataset – NIE jest wymagana dla .fit()
+# Możesz ją usunąć jeśli nie używasz tf.data pipeline
