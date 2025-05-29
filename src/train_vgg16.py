@@ -5,8 +5,11 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 from data_preparation import train_generator, val_generator
 from plot_training import plot_training
+import os
+from data_preparation import train_generator, val_generator, DATA_DIR
 
-NUM_CLASSES = 120
+NUM_CLASSES = len(os.listdir(DATA_DIR))
+print(f"Detected {NUM_CLASSES} classes")
 EPOCHS = 10
 LEARNING_RATE = 1e-4
 
@@ -30,8 +33,8 @@ history = model.fit(
     train_generator,
     validation_data=val_generator,
     epochs=EPOCHS,
-    steps_per_epoch=2064,  # 16508 / 8
-    validation_steps=509,  # 4072 / 8
+    steps_per_epoch = train_generator.samples // train_generator.batch_size
+    validation_steps = val_generator.samples // val_generator.batch_size
     callbacks=callbacks
 )
 
