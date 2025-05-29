@@ -1,8 +1,8 @@
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-# Ścieżka do folderu ze zdjęciami na Google Drive
-DATA_DIR = '/content/dogdataset/halfdata'
+DATA_DIR = '/Users/wpacocha/Studia/cnn-dog-classifier/halfdata'
+
 IMG_SIZE = (224, 224)
 BATCH_SIZE = 8
 
