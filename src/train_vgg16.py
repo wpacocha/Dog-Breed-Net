@@ -8,7 +8,7 @@ from plot_training import plot_training
 import os
 from data_preparation import train_generator, val_generator, DATA_DIR
 
-NUM_CLASSES = len(os.listdir(DATA_DIR))
+NUM_CLASSES = len([d for d in os.listdir(DATA_DIR) if os.path.isdir(os.path.join(DATA_DIR, d))])
 print(f"Detected {NUM_CLASSES} classes")
 EPOCHS = 10
 LEARNING_RATE = 1e-4
