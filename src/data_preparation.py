@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 # Ścieżka do folderu ze zdjęciami na Google Drive
-DATA_DIR = '/content/drive/MyDrive/Colab Notebooks/dogdataset/images/Images'
+DATA_DIR = '/content/dogdataset/halfdata'
 IMG_SIZE = (224, 224)
 BATCH_SIZE = 8
 
