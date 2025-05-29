@@ -1,23 +1,39 @@
 import matplotlib.pyplot as plt
 
-def plot_training(history,fine_tune_history=None):
-    acc = history.history['accuracy']
-    val_acc = history.history['val_accuracy']
-    loss = history.history['loss']
-    val_loss =history.history['val_loss']
+def plot_training(history, model_name="model"):
+    import matplotlib.pyplot as plt
 
-    if fine_tune_history:
-        acc += fine_tune_history.history['accuracy']
-        val_acc += fine_tune_history.history['val_accuracy']
-        loss += fine_tune_history.history['loss']
-        val_loss += fine_tune_history.history['val_loss']
+    if isinstance(history, list):
+        acc = history[0].history['accuracy']
+        val_acc = history[0].history['val_accuracy']
+        loss = history[0].history['loss']
+        val_loss = history[0].history['val_loss']
 
-    epochs = range(1, len(acc)+1)
+        for h in history[1:]:
+            acc += h.history['accuracy']
+            val_acc += h.history['val_accuracy']
+            loss += h.history['loss']
+            val_loss += h.history['val_loss']
+    else:
+        acc = history.history['accuracy']
+        val_acc = history.history['val_accuracy']
+        loss = history.history['loss']
+        val_loss = history.history['val_loss']
 
-    plt.figure(figsize = (12,5))
-    plt.subplot(1,2,1)
-    plt.plot(epochs,loss, 'bo-', label='Train loss')
-    plt.plot(epochs,val_loss,'r^-', label='Val loss')
+    epochs = range(1, len(acc) + 1)
+
+    plt.figure(figsize=(14, 5))
+    plt.subplot(1, 2, 1)
+    plt.plot(epochs, acc, label='Train Accuracy')
+    plt.plot(epochs, val_acc, label='Validation Accuracy')
+    plt.title(f'{model_name} Accuracy')
     plt.legend()
-    plt.title('Loss')
+
+    plt.subplot(1, 2, 2)
+    plt.plot(epochs, loss, label='Train Loss')
+    plt.plot(epochs, val_loss, label='Validation Loss')
+    plt.title(f'{model_name} Loss')
+    plt.legend()
+
+    plt.savefig(f"{model_name}_training.png")
     plt.show()
