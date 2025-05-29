@@ -1,27 +1,26 @@
 import matplotlib.pyplot as plt
 
 def plot_training(history, model_name="model"):
-    import matplotlib.pyplot as plt
+    # Jeśli podano tylko 1 obiekt
+    if not isinstance(history, list):
+        history = [history]
 
-    if isinstance(history, list):
-        acc = history[0].history['accuracy']
-        val_acc = history[0].history['val_accuracy']
-        loss = history[0].history['loss']
-        val_loss = history[0].history['val_loss']
+    # Wyodrębnij metryki
+    acc = []
+    val_acc = []
+    loss = []
+    val_loss = []
 
-        for h in history[1:]:
-            acc += h.history['accuracy']
-            val_acc += h.history['val_accuracy']
-            loss += h.history['loss']
-            val_loss += h.history['val_loss']
-    else:
-        acc = history.history['accuracy']
-        val_acc = history.history['val_accuracy']
-        loss = history.history['loss']
-        val_loss = history.history['val_loss']
+    for h in history:
+        if hasattr(h, "history"):
+            acc += h.history.get('accuracy', [])
+            val_acc += h.history.get('val_accuracy', [])
+            loss += h.history.get('loss', [])
+            val_loss += h.history.get('val_loss', [])
 
     epochs = range(1, len(acc) + 1)
 
+    # Wykres
     plt.figure(figsize=(14, 5))
     plt.subplot(1, 2, 1)
     plt.plot(epochs, acc, label='Train Accuracy')
