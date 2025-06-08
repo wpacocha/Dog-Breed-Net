@@ -12,9 +12,9 @@ NUM_CLASSES = len([d for d in os.listdir(DATA_DIR) if os.path.isdir(os.path.join
 print(f"Detected {NUM_CLASSES} classes")
 
 # Parametry
-EPOCHS = 20
-EPOCHS_FROZEN = 10
-EPOCHS_UNFROZEN = 10
+EPOCHS = 40
+EPOCHS_FROZEN = 20
+EPOCHS_UNFROZEN = 20
 LEARNING_RATE = 1e-4
 
 # Budowanie modelu
