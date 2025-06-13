@@ -1,66 +1,61 @@
-import os
 from tensorflow.keras.applications import ResNet50
-from tensorflow.keras.layers import GlobalAveragePooling2D, Dense, Dropout
 from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 from data_preparation import train_generator, val_generator
-import pickle
-from plot_training import plot_history
+from plot_training import plot_training
 
-IMG_SHAPE = (224, 224, 3)
 NUM_CLASSES = train_generator.num_classes
-EPOCHS = 10
-MODEL_PATH = os.path.join(os.path.dirname(__file__), '..', 'models', 'resnet50_dogs.h5')
+EPOCHS_FROZEN = 20
+EPOCHS_UNFROZEN = 40
+LEARNING_RATE = 1e-4
 
-base_model = ResNet50(weights='imagenet', include_top=False, input_shape=IMG_SHAPE)
-
-for layer in base_model.layers:
-    layer.trainable = False
-
-x = base_model.output
-x = GlobalAveragePooling2D()(x)
+base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+x = GlobalAveragePooling2D()(base_model.output)
 x = Dropout(0.3)(x)
 x = Dense(256, activation='relu')(x)
 x = Dropout(0.3)(x)
 predictions = Dense(NUM_CLASSES, activation='softmax')(x)
-
 model = Model(inputs=base_model.input, outputs=predictions)
 
-model.compile(optimizer=Adam(learning_rate=1e-4), loss='categorical_crossentropy', metrics=['accuracy'])
+# Faza 1 - Zamrożony backbone
+for layer in base_model.layers:
+    layer.trainable = False
 
-checkpoint = ModelCheckpoint(MODEL_PATH, save_best_only=True, monitor='val_accuracy', mode='max')
-earlystop = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
+model.compile(optimizer=Adam(learning_rate=LEARNING_RATE),
+              loss='categorical_crossentropy', metrics=['accuracy'])
 
-history = model.fit(
+history1 = model.fit(
     train_generator,
-    epochs=EPOCHS,
     validation_data=val_generator,
-    callbacks=[checkpoint, earlystop]
+    steps_per_epoch=train_generator.samples // train_generator.batch_size,
+    validation_steps=val_generator.samples // val_generator.batch_size,
+    epochs=EPOCHS_FROZEN,
+    callbacks=[
+        ModelCheckpoint("best_model_resnet50.h5", save_best_only=True, monitor="val_accuracy"),
+        ReduceLROnPlateau(monitor='val_loss', factor=0.3, patience=3),
+    ]
 )
 
-for layer in model.layers:
-    layer.trainable=True
+# Faza 2 - Odblokowanie wyższych warstw
+for layer in base_model.layers[-30:]:
+    layer.trainable = True
 
-model.compile(
-    optimizer=Adam(learning_rate=1e-5),
-    loss='categorical_crossentropy',
-    metrics=['accuracy']
-)
+model.compile(optimizer=Adam(learning_rate=LEARNING_RATE / 10),
+              loss='categorical_crossentropy', metrics=['accuracy'])
 
-fine_tune_epochs=10
-total_epochs = EPOCHS + fine_tune_epochs
-
-history_fine = model.fit(
+history2 = model.fit(
     train_generator,
-    epochs=total_epochs,
-    initial_epoch=history.epoch[-1],
     validation_data=val_generator,
-    callbacks=[checkpoint,earlystop]
+    steps_per_epoch=train_generator.samples // train_generator.batch_size,
+    validation_steps=val_generator.samples // val_generator.batch_size,
+    initial_epoch=EPOCHS_FROZEN,
+    epochs=EPOCHS_UNFROZEN,
+    callbacks=[
+        ModelCheckpoint("best_model_resnet50.h5", save_best_only=True, monitor="val_accuracy"),
+        ReduceLROnPlateau(monitor='val_loss', factor=0.3, patience=3),
+    ]
 )
 
-with open("/content/history.pkl", "wb") as f:
-    pickle.dump((history, history_fine), f)
-
-
-plot_history(history,history_fine)
+plot_training([history1, history2], "ResNet50")
